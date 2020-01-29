@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://unpkg.com/react@16.0.0-rc.3/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@16.0.0-rc.3/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.6.0/prop-types.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
+
+    <title>Drum Machine</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const drumPads = [
+        {
+          id: "Chord-1",
+          buttonText: "Q",
+          audioId: "q",
+          url: "https://s3.amazonaws.com/freecodecamp/drums/Chord_1.mp3"
+        },
+        {
+          id: "Chord-2",
+          buttonText: "W",
+          audioId: "w",
+          url: `https://s3.amazonaws.com/freecodecamp/drums/Chord_2.mp3`
+        },
+        {
+          id: "Chord-3",
+          buttonText: "E",
+          audioId: "e",
+          url: `https://s3.amazonaws.com/freecodecamp/drums/Chord_3.mp3`
+        },
+        {
+          id: "Shaker",
+          buttonText: "A",
+          audioId: "a",
+          url: `https://s3.amazonaws.com/freecodecamp/drums/Give_us_a_light.mp3`
+        },
+        {
+          id: "Open-HH",
+          buttonText: "S",
+          audioId: "s",
+          url: `https://s3.amazonaws.com/freecodecamp/drums/Dry_Ohh.mp3`
+        },
+        {
+          id: "Closed-HH",
+          buttonText: "D",
+          audioId: "d",
+          url: "https://s3.amazonaws.com/freecodecamp/drums/Bld_H1.mp3"
+        },
+        {
+          id: "Punchy-Kick",
+          buttonText: "Z",
+          audioId: "z",
+          url: `https://s3.amazonaws.com/freecodecamp/drums/punchy_kick_1.mp3`
+        },
+        {
+          id: "Side-Stick",
+          buttonText: "X",
+          audioId: "x",
+          url: `https://s3.amazonaws.com/freecodecamp/drums/side_stick_1.mp3`
+        },
+        {
+          id: "Snare",
+          buttonText: "C",
+          audioId: "c",
+          url: "https://s3.amazonaws.com/freecodecamp/drums/Brk_Snr.mp3"
+        }
+      ];
+      function App() {
+        return <DrumMachine />;
+      }
+
+      class DrumMachine extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { targetPad: "" };
+          this.handleOnKeyDown = this.handleOnKeyDown.bind(this);
+          this.handleClick = this.handleClick.bind(this);
+          this.checkClicked = this.checkClicked.bind(this);
+        }
+
+        checkClicked() {
+          this.state.targetPad !== ""
+            ? document
+                .getElementById(this.state.targetPad)
+                .classList.remove("clickedButton")
+            : null;
+        }
+
+        handleClick = event => {
+          this.checkClicked();
+          event.target.childNodes[1].play();
+          this.setState({ targetPad: event.target.id });
+          document
+            .getElementById(event.target.id)
+            .classList.add("clickedButton");
+        };
+
+        handleOnKeyDown(event) {
+          let arr = ["q", "w", "e", "a", "s", "d", "z", "x", "c"];
+          if (arr.indexOf(event.key) !== -1) {
+            this.checkClicked();
+            document.getElementById(event.key).play();
+
+            this.setState({
+              targetPad: drumPads.filter(
+                drumPad => drumPad.audioId === event.key
+              )[0].id
+            });
+
+            document
+              .getElementById(this.state.targetPad)
+              .classList.add("clickedButton");
+          }
+        }
+
+        componentDidMount() {
+          window.addEventListener("keydown", this.handleOnKeyDown);
+        }
+
+        componentWillUnmount() {
+          window.removeEventListener("keydown", this.handleOnKeyDown);
+        }
+
+        render() {
+          const drumPadComponents = drumPads.map(drumPad => {
+            return (
+              <DrumPad
+                onClick={this.handleClick}
+                className="drum-pad"
+                id={drumPad.id}
+                key={drumPad.id}
+                buttonText={drumPad.buttonText}
+                audioId={drumPad.audioId}
+                url={drumPad.url}
+                state={this.state}
+              />
+            );
+          });
+
+          return (
+            <div id="drum-machine">
+              <div id="display">
+                <p id="innerText">
+                  {this.state.targetPad !== ""
+                    ? this.state.targetPad
+                    : "Drum Machine"}
+                </p>
+
+                <div id="drum-pads">{drumPadComponents}</div>
+              </div>
+            </div>
+          );
+        }
+      }
+
+      function DrumPad(props) {
+        return (
+          <button
+            onClick={props.onClick}
+            className={props.className}
+            id={props.id}
+            tabindex="0"
+          >
+            {props.buttonText}
+            <audio className="clip" id={props.audioId}>
+              <source src={props.url}></source>
+            </audio>
+          </button>
+        );
+      }
+
+      ReactDOM.render(<App />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
